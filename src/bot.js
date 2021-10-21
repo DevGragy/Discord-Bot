@@ -1,5 +1,5 @@
 const { Client, Intents, MessageEmbed } = require('discord.js')
-const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] })
+const client = new Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES,Intents.FLAGS.GUILD_VOICE_STATES] })
 const prefix = "-"
 
 const ytdl = require('ytdl-core');
@@ -25,7 +25,6 @@ client.once('ready', () => {
 
 client.on("guildMemberAdd", (member) => {
     console.log(`Nuevo usuario:  ${member.user.username} se ha unido a ${member.guild.name}.`);
-    
     let channel = client.channels.get('898013047745036298'); 
     channel.send(`${member.user}, bienvenido al servidor pasala bien.`);
     
@@ -73,7 +72,7 @@ client.on('message', async (message) => {
         let reason = args.slice(1).join(' ')
 
         if (message.mentions.users.size < 1) {
-            try {
+            try {   
                 return message.reply('Menciona un usuario...')
             } catch (message_1) {
                 return console.error(message_1)
@@ -240,7 +239,8 @@ client.on('message', async (message) => {
 
     //Comando que reproduce musica
     if (command === 'yt') { 
-        let songName = args.slice(1).join(' ');
+        //let songName = args.slice(1).join(' ');
+
 
         const connection = joinVoiceChannel({
             channelId: message.member.voice.channel.id,
@@ -248,29 +248,14 @@ client.on('message', async (message) => {
             adapterCreator: message.guild.voiceAdapterCreator
         })
 
-        const stream = ytdl(songName, {filter: 'audioonly'} )
-        const player = createAudioPlayer();
+        const stream = ytdl('https://www.youtube.com/watch?v=F7w9WCW9UOY', { filter: 'audioonly' });
         const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
-        
-        stream.on('error', e => {
-            console.error(e)
-            message.channel.send('Hubo un error')
-        })
+        const player = createAudioPlayer();
 
-        player.play(resource)
-        connection.playOpusPacket(player);
+        player.play(resource);
+        connection.subscribe(player);
 
-        player.on(AudioPlayerStatus.Playing, () => {
-            console.log('Hay musica!');
-        });
-
-        player.on(AudioPlayerStatus.Idle, () => {
-            console.log('No hay audio')
-        })
-
-        player.on(AudioPlayerStatus.Buffering, () => {
-            console.log('En espera')
-        })
+        player.on(AudioPlayerStatus.Idle, () => connection.destroy());
     }
 })
 
