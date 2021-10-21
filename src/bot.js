@@ -239,8 +239,8 @@ client.on('message', async (message) => {
 
     //Comando que reproduce musica
     if (command === 'yt') { 
-        //let songName = args.slice(1).join(' ');
-
+        let songName = args.slice(0).join(' ');
+        console.log(args)
 
         const connection = joinVoiceChannel({
             channelId: message.member.voice.channel.id,
@@ -248,7 +248,8 @@ client.on('message', async (message) => {
             adapterCreator: message.guild.voiceAdapterCreator
         })
 
-        const stream = ytdl('https://www.youtube.com/watch?v=F7w9WCW9UOY', { filter: 'audioonly' });
+        const stream = ytdl(songName, { filter: 'audioonly' });
+        
         const resource = createAudioResource(stream, { inputType: StreamType.Arbitrary });
         const player = createAudioPlayer();
 
@@ -258,8 +259,5 @@ client.on('message', async (message) => {
         player.on(AudioPlayerStatus.Idle, () => connection.destroy());
     }
 })
-
-
-
 
 client.login(process.env.BOT_TOKEN)
